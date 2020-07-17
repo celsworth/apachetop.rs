@@ -1,0 +1,105 @@
+on:
+  release:
+    types:
+      - published
+
+name: Build
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    continue-on-error: true
+
+    strategy:
+      matrix:
+        build: [linux, linux-arm, macos, win-msvc, win-gnu, win32-msvc]
+        include:
+        - build: linux
+          os: ubuntu-18.04
+          rust: nightly
+          target: x86_64-unknown-linux-musl
+        - build: linux-arm
+          os: ubuntu-18.04
+          rust: nightly
+          target: arm-unknown-linux-gnueabihf
+        - build: linux-aarch64
+          os: ubuntu-18.04
+          rust: nightly
+          target: aarch64-unknown-linux-musl
+        - build: macos
+          os: macos-latest
+          rust: nightly
+          target: x86_64-apple-darwin
+        - build: win-msvc
+          os: windows-2019
+          rust: nightly
+          target: x86_64-pc-windows-msvc
+        - build: win-gnu
+          os: windows-2019
+          rust: nightly-x86_64-gnu
+          target: x86_64-pc-windows-gnu
+        - build: win32-msvc
+          os: windows-2019
+          rust: nightly
+          target: i686-pc-windows-msvc
+
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/cache@v2
+        with:
+          path: |
+            /usr/share/rust~/.cargo/registry
+            /usr/share/rust~/.cargo/git
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          profile: minimal
+          override: true
+          target: ${{ matrix.target }}
+
+      - name: Build release binary
+        uses: actions-rs/cargo@v1
+        with:
+          use-cross: true
+          command: build
+          args: --release --target ${{ matrix.target }}
+
+      - name: Set release version
+        shell: bash
+        run: |
+          echo "::set-env name=RELEASE_VERSION::${GITHUB_REF#refs/tags/}"
+          echo "release version: $RELEASE_VERSION"
+
+      - name: Build archive
+        shell: bash
+        run: |
+          staging="apachetop-${{ env.RELEASE_VERSION }}-${{ matrix.target }}"
+          mkdir -p "$staging"
+          if [ "${{ matrix.os }}" = "windows-2019" ]; then
+            cp "target/${{ matrix.target }}/release/apachetop.exe" "$staging/"
+          else
+            cp "target/${{ matrix.target }}/release/apachetop" "$staging/"
+          fi
+          7z a "$staging.zip" "$staging"
+          echo "::set-env name=ASSET::$staging.zip"
+
+          #- uses: actions/upload-artifact@v2
+          #with:
+          #name: apachetop-${{ matrix.target }}
+          #path: target
+
+      - name: Attach archive to release
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          hub release edit -m "" -a ${{ env.ASSET }} ${{ github.event.release.tag_name }}
