@@ -36,7 +36,7 @@ impl App {
 
         let options = Arc::new(RwLock::new(options));
         let alltime_stats = Arc::new(Mutex::new(Stats::new()));
-        let ring_buffer = Arc::new(Mutex::new(RingBuffer::new(Arc::clone(&options))?));
+        let ring_buffer = Arc::new(Mutex::new(RingBuffer::new(Arc::clone(&options), true)?));
         Self::start_request_receiver(
             request_rx,
             Arc::clone(&alltime_stats),

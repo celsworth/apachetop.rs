@@ -132,7 +132,7 @@ impl std::str::FromStr for Order {
     }
 }
 
-#[derive(Eq, PartialEq, Debug)]
+#[derive(Eq, PartialEq, Debug, Clone, Copy)]
 pub enum GroupBy {
     IpAddress,
     Referer,
