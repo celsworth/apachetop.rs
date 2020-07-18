@@ -2,30 +2,6 @@ use crate::prelude::*;
 
 use structopt::StructOpt;
 
-pub struct Wrapper(Arc<RwLock<Option<Options>>>);
-
-pub fn get_options() -> Wrapper {
-    Wrapper(OPTIONS.clone())
-}
-
-impl Wrapper {
-    pub fn set(&self, options: Options) {
-        self.write().replace(options);
-    }
-
-    pub fn read(&self) -> std::sync::RwLockReadGuard<Option<Options>> {
-        self.0.read().unwrap()
-    }
-
-    pub fn write(&self) -> std::sync::RwLockWriteGuard<Option<Options>> {
-        self.0.write().unwrap()
-    }
-
-    //pub fn foo(&self) -> Arc<Options> {
-    //    Arc::new(self.read().unwrap())
-    //}
-}
-
 #[derive(Debug, StructOpt)]
 #[structopt()]
 pub struct Options {

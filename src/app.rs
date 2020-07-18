@@ -19,10 +19,6 @@ impl App {
 
         debug!("{:?}", options);
 
-        let opts = get_options();
-        opts.set(Options::new()?);
-        debug!("{:?}", get_options().read());
-
         // TODO: should probably abort process when a thread crashes?
         log_panics::init();
 

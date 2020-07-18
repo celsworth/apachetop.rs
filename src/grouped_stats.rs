@@ -6,12 +6,12 @@ pub struct GroupedStats {
 
     group_by: GroupBy,
 
-    buffer: std::collections::HashMap<GroupKey, RingBuffer>,
+    buffer: HashMap<GroupKey, RingBuffer>,
 }
 
 impl GroupedStats {
     pub fn new(options: Arc<RwLock<Options>>, group_by: GroupBy) -> Self {
-        let buffer = std::collections::HashMap::new();
+        let buffer = HashMap::new();
 
         Self {
             options,
