@@ -41,12 +41,14 @@ impl RingBuffer {
         self.buffer.front()
     }
 
-    // Clear out self.grouped, if we have one, and repopulate it.
+    // Clear out self.grouped, if we have one, and repopulate it according
+    // to the new passed-in GroupBy.
     //
     // This is used when the grouping key changes.
-    pub fn regroup(&mut self) -> Option<Result<(), Error>> {
+    pub fn regroup(&mut self, group_by: GroupBy) -> Option<Result<(), Error>> {
         let grouped = self.grouped.as_mut()?;
-        grouped.clear();
+
+        grouped.group_by(group_by);
 
         for request in self.buffer.iter() {
             if let Err(e) = grouped.add(Arc::clone(&request)) {

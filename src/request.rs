@@ -82,6 +82,19 @@ impl Request {
         })
     }
 
+    pub fn group_key(&self, group_by: GroupBy) -> GroupKey {
+        match group_by {
+            GroupBy::IpAddress => GroupKey::IpAddress(self.ip_address),
+            GroupBy::Referer => GroupKey::Referer(self.referer.clone()),
+            GroupBy::Username => match self.username {
+                Some(ref x) => GroupKey::Username(x.clone()),
+                None => GroupKey::Username(String::new()),
+            },
+            GroupBy::StatusCode => GroupKey::StatusCode(self.status_code),
+            GroupBy::URI => GroupKey::URI(self.uri.clone()),
+        }
+    }
+
     fn parse(input: &str) -> Result<regex::Captures, Error> {
         lazy_static! {
             static ref CLF_RE: Regex = Regex::new(r#"^(\S+) (\S+) (\S+) \[([\w:/]+\s[+\-]\d{4})\] "(\S+)\s?(\S+)?\s?(\S+)?" (\d{3}|-) (\d+|-)\s?"?([^"]*)"?\s?"?([^"]*)?"?$"#).unwrap();

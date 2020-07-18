@@ -58,6 +58,7 @@ impl Options {
         Ok(r)
     }
 
+    // Set the next Order in the sequence.
     pub fn toggle_sort(&mut self) {
         self.order = match self.order {
             Order::Requests => Order::Size,
@@ -65,7 +66,8 @@ impl Options {
         };
     }
 
-    pub fn toggle_group(&mut self) {
+    // Set the next GroupBy in the sequence, and then return the new value.
+    pub fn toggle_group(&mut self) -> GroupBy {
         self.group = match self.group {
             GroupBy::IpAddress => GroupBy::Referer,
             GroupBy::Referer => GroupBy::StatusCode,
@@ -73,6 +75,7 @@ impl Options {
             GroupBy::URI => GroupBy::Username,
             GroupBy::Username => GroupBy::IpAddress,
         };
+        self.group
     }
 
     // convert self.buffer_size into a tuple of (i64, ring_buffer::StorageType)

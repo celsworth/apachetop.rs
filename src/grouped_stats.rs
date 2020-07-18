@@ -20,26 +20,14 @@ impl GroupedStats {
         }
     }
 
-    pub fn clear(&mut self) {
+    // set a new group_by key, which means the previous buffer is now invalid, so clear it.
+    pub fn group_by(&mut self, group_by: GroupBy) {
         self.buffer.clear();
-    }
-
-    // better in Request?
-    pub fn group_key(&self, request: &Request) -> GroupKey {
-        match self.group_by {
-            GroupBy::IpAddress => GroupKey::IpAddress(request.ip_address),
-            GroupBy::Referer => GroupKey::Referer(request.referer.clone()),
-            GroupBy::Username => match request.username {
-                Some(ref x) => GroupKey::Username(x.clone()),
-                None => GroupKey::Username(String::new()),
-            },
-            GroupBy::StatusCode => GroupKey::StatusCode(request.status_code),
-            GroupBy::URI => GroupKey::URI(request.uri.clone()),
-        }
+        self.group_by = group_by;
     }
 
     pub fn add(&mut self, request: Arc<Request>) -> Result<(), Error> {
-        let key = self.group_key(&request);
+        let key = request.group_key(self.group_by);
 
         match self.buffer.get_mut(&key) {
             Some(bucket) => bucket.push(request)?,

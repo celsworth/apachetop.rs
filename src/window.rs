@@ -177,25 +177,34 @@ impl Window {
             Key(KeyEvent {
                 code: Char('o'), ..
             }) => {
-                self.options.write().unwrap().toggle_sort();
+                self.toggle_sort();
             }
             Key(KeyEvent {
                 code: Char('g'), ..
             }) => {
-                self.options.write().unwrap().toggle_group();
-                self.ring_buffer.lock().unwrap().regroup();
+                self.toggle_group();
             }
 
             Key(event) => info!("{:?}", event),
             Mouse(event) => info!("{:?}", event),
             Resize(cols, lines) => {
-                info!("New size {}x{}", cols, lines);
                 self.lines = lines;
                 self.cols = cols;
             }
         }
 
         Ok(true)
+    }
+
+    fn toggle_sort(&self) {
+        self.options.write().unwrap().toggle_sort();
+    }
+
+    fn toggle_group(&self) {
+        let mut o = self.options.write().unwrap();
+        let group_by = o.toggle_group();
+        drop(o);
+        self.ring_buffer.lock().unwrap().regroup(group_by);
     }
 
     fn table_line(&self, key: &GroupKey, rr: &RingBuffer, elapsed: f64) -> String {
