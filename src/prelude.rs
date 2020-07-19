@@ -4,10 +4,8 @@ pub use log::{debug, error, info, trace, warn};
 
 pub use std::collections::{HashMap, VecDeque};
 pub use std::net::IpAddr;
-pub use std::sync::{Arc, Mutex, RwLock};
+pub use std::sync::{Arc, Mutex};
 pub use std::thread;
-
-pub use crate::OPTIONS;
 
 pub use crate::app::App;
 pub use crate::grouped_stats::{GroupKey, GroupedStats};

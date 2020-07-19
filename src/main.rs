@@ -10,11 +10,6 @@ mod window;
 
 use crate::prelude::*;
 
-use lazy_static::lazy_static;
-lazy_static! {
-    pub static ref OPTIONS: Arc<RwLock<Option<Options>>> = Arc::new(RwLock::new(None));
-}
-
 fn main() {
     if let Err(err) = try_main() {
         println!("Error: {:?}", err);

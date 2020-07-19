@@ -13,7 +13,7 @@ pub struct Window {
     lines: u16,
     cols: u16,
 
-    options: Arc<RwLock<Options>>,
+    options: Arc<Mutex<Options>>,
 
     alltime_stats: Arc<Mutex<Stats>>,
     ring_buffer: Arc<Mutex<RingBuffer>>,
@@ -21,7 +21,7 @@ pub struct Window {
 
 impl Window {
     pub fn new(
-        options: Arc<RwLock<Options>>,
+        options: Arc<Mutex<Options>>,
         alltime_stats: Arc<Mutex<Stats>>,
         ring_buffer: Arc<Mutex<RingBuffer>>,
     ) -> Self {
@@ -40,7 +40,7 @@ impl Window {
 
     pub fn run(&mut self) -> Result<(), Error> {
         // temporary lock on options to get interval
-        let options = self.options.read().unwrap();
+        let options = self.options.lock().unwrap();
         let interval = options.interval;
         drop(options);
         // support f64 seconds by multiplying then using from_millis
@@ -122,7 +122,7 @@ impl Window {
                 .queue(Print(self.per_code_line(&ring_buffer.stats)))?;
 
             {
-                let options = self.options.read().unwrap();
+                let options = self.options.lock().unwrap();
                 stdout.queue(cursor::MoveTo(0, 6))?.queue(Print(
                     format!(
                         "{:width$}",
@@ -197,11 +197,11 @@ impl Window {
     }
 
     fn toggle_sort(&self) {
-        self.options.write().unwrap().toggle_sort();
+        self.options.lock().unwrap().toggle_sort();
     }
 
     fn toggle_group(&self) {
-        let mut o = self.options.write().unwrap();
+        let mut o = self.options.lock().unwrap();
         let group_by = o.toggle_group();
         drop(o);
         self.ring_buffer.lock().unwrap().regroup(group_by);

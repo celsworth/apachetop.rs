@@ -4,7 +4,7 @@ use crate::prelude::*;
 pub struct RingBuffer {
     pub stats: Stats,
 
-    options: Arc<RwLock<Options>>,
+    options: Arc<Mutex<Options>>,
 
     pub buffer: VecDeque<Arc<Request>>,
 
@@ -12,7 +12,7 @@ pub struct RingBuffer {
 }
 
 impl RingBuffer {
-    pub fn new(options: Arc<RwLock<Options>>, with_grouped: bool) -> Result<Self, Error> {
+    pub fn new(options: Arc<Mutex<Options>>, with_grouped: bool) -> Result<Self, Error> {
         let size = Self::size_from_options(&options)?;
 
         // This is false when creating nested RingBuffers inside other GroupedStats, ie
@@ -22,7 +22,7 @@ impl RingBuffer {
         // forever.
         let grouped = if with_grouped {
             // TODO: allow setting this per level in UI
-            let group_by = options.read().unwrap().group;
+            let group_by = options.lock().unwrap().group;
 
             Some(GroupedStats::new(Arc::clone(&options), group_by))
         } else {
@@ -71,7 +71,7 @@ impl RingBuffer {
     }
 
     pub fn cleanup(&mut self) -> Result<(), Error> {
-        let o = self.options.read().unwrap();
+        let o = self.options.lock().unwrap();
         let s = o.storage_type()?;
         drop(o);
 
@@ -115,8 +115,8 @@ impl RingBuffer {
         }
     }
 
-    fn size_from_options(options: &Arc<RwLock<Options>>) -> Result<u64, Error> {
-        let o = options.read().unwrap();
+    fn size_from_options(options: &Arc<Mutex<Options>>) -> Result<u64, Error> {
+        let o = options.lock().unwrap();
         Ok(match o.storage_type()? {
             StorageType::Requests(size) => size,
             StorageType::Timed(size) => size * 10, // assume 10 reqs/sec as a starting point
@@ -135,7 +135,7 @@ impl Ord for RingBuffer {
         let this = &self.stats.global;
         let other = &other.stats.global;
 
-        let options = self.options.read().unwrap();
+        let options = self.options.lock().unwrap();
         match options.order {
             Order::Requests => this.requests.cmp(&other.requests),
             Order::Size => this.bytes.cmp(&other.bytes),

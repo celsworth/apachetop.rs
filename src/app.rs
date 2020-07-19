@@ -6,7 +6,7 @@ pub struct App {
     window: Window,
 
     // passed to RingBuffer and Window, then unused here so far
-    options: Arc<RwLock<Options>>,
+    options: Arc<Mutex<Options>>,
 
     // input logfiles. not used yet but may want to close/cleanup?
     logfiles: Vec<Logfile>,
@@ -30,7 +30,7 @@ impl App {
             .map(|file| Logfile::new(file, request_tx.clone()))
             .collect::<Result<_, _>>()?;
 
-        let options = Arc::new(RwLock::new(options));
+        let options = Arc::new(Mutex::new(options));
         let alltime_stats = Arc::new(Mutex::new(Stats::new()));
         let ring_buffer = Arc::new(Mutex::new(RingBuffer::new(Arc::clone(&options), true)?));
         Self::start_request_receiver(

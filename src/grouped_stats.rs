@@ -2,7 +2,7 @@ use crate::prelude::*;
 
 #[derive(Debug, Clone)]
 pub struct GroupedStats {
-    options: Arc<RwLock<Options>>,
+    options: Arc<Mutex<Options>>,
 
     group_by: GroupBy,
 
@@ -10,7 +10,7 @@ pub struct GroupedStats {
 }
 
 impl GroupedStats {
-    pub fn new(options: Arc<RwLock<Options>>, group_by: GroupBy) -> Self {
+    pub fn new(options: Arc<Mutex<Options>>, group_by: GroupBy) -> Self {
         let buffer = HashMap::new();
 
         Self {
